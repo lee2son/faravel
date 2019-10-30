@@ -2,19 +2,19 @@
 
 namespace Faravel\Redis\Connectors;
 
-use Faravel\Redis\Connections\PredisExClusterConnection;
-use Faravel\Redis\Connections\PredisExConnection;
+use Faravel\Redis\Connections\PredisClusterConnection;
+use Faravel\Redis\Connections\PredisConnection;
 use Illuminate\Support\Arr;
 use Predis\Client;
 
-class PredisExConnector/* extends \Illuminate\Redis\Connectors\PredisConnector*/
+class PredisConnector/* extends \Illuminate\Redis\Connectors\PredisConnector*/
 {
     /**
      * Create a new clustered Predis connection.
      *
      * @param  array  $config
      * @param  array  $options
-     * @return PredisExConnection
+     * @return PredisConnection
      */
     public function connect(array $config, array $options)
     {
@@ -22,7 +22,7 @@ class PredisExConnector/* extends \Illuminate\Redis\Connectors\PredisConnector*/
             ['timeout' => 10.0], $options, Arr::pull($config, 'options', [])
         );
 
-        return new PredisExConnection(new Client($config, $formattedOptions));
+        return new PredisConnection(new Client($config, $formattedOptions));
     }
 
     /**
@@ -31,13 +31,13 @@ class PredisExConnector/* extends \Illuminate\Redis\Connectors\PredisConnector*/
      * @param  array  $config
      * @param  array  $clusterOptions
      * @param  array  $options
-     * @return PredisExClusterConnection
+     * @return PredisClusterConnection
      */
     public function connectToCluster(array $config, array $clusterOptions, array $options)
     {
         $clusterSpecificOptions = Arr::pull($config, 'options', []);
 
-        return new PredisExClusterConnection(new Client(array_values($config), array_merge(
+        return new PredisClusterConnection(new Client(array_values($config), array_merge(
             $options, $clusterOptions, $clusterSpecificOptions
         )));
     }

@@ -16,7 +16,9 @@ class FaravelServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-
+        $this->bootListenSql();
+        $this->bootListenRedis();
+        $this->bootRedisExtend();
     }
 
     /**
@@ -26,20 +28,7 @@ class FaravelServiceProvider extends ServiceProvider
     public function register()
     {
         $this->mergeConfigFrom(__DIR__ . '/../config/faravel.php', 'faravel');
-        $this->registerPredisex();
         $this->registerCommand();
-        $this->listenSql();
-        $this->listenRedis();
-    }
-
-    /**
-     * 扩展 predis
-     */
-    protected function registerPredisex()
-    {
-        app('redis')->extend('predis', function() {
-            return new \Faravel\Redis\Connectors\PredisExConnector();
-        });
     }
 
     /**
@@ -53,7 +42,7 @@ class FaravelServiceProvider extends ServiceProvider
     /**
      * 监听SQL，记录到日志
      */
-    protected function listenSql()
+    protected function bootListenSql()
     {
         if(config('faravel.listen_sql.enable')) {
             DB::listen(function (QueryExecuted $query) {
@@ -67,7 +56,7 @@ class FaravelServiceProvider extends ServiceProvider
     /**
      * 监听 redis
      */
-    protected function listenRedis()
+    protected function bootListenRedis()
     {
         foreach(config('faravel.listen_redis') as $connection => $log)
         {
@@ -77,5 +66,15 @@ class FaravelServiceProvider extends ServiceProvider
                 Log::channel($log)->info($text);
             });
         }
+    }
+
+    /**
+     * 扩展 predis
+     */
+    protected function bootRedisExtend()
+    {
+        app('redis')->extend('predis', function() {
+            return new \Faravel\Redis\Connectors\PredisConnector();
+        });
     }
 }
