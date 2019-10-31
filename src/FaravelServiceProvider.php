@@ -6,6 +6,7 @@ use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Redis\Events\CommandExecuted;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\ServiceProvider;
 
 class FaravelServiceProvider extends ServiceProvider
@@ -16,9 +17,9 @@ class FaravelServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        $this->bootListenSql();
-        $this->bootListenRedis();
-        $this->bootRedisExtend();
+        $this->redisExtend();
+        $this->listenSql();
+        $this->listenRedis();
     }
 
     /**
@@ -29,6 +30,10 @@ class FaravelServiceProvider extends ServiceProvider
     {
         $this->mergeConfigFrom(__DIR__ . '/../config/faravel.php', 'faravel');
         $this->registerCommand();
+
+        $this->publishes([
+            __DIR__ . '/../config/faravel.php' => base_path('config/faravel.php')
+        ], 'faravel');
     }
 
     /**
@@ -40,40 +45,44 @@ class FaravelServiceProvider extends ServiceProvider
     }
 
     /**
-     * 监听SQL，记录到日志
+     * 监听 sql
      */
-    protected function bootListenSql()
+    protected function listenSql()
     {
-        if(config('faravel.listen_sql.enable')) {
-            DB::listen(function (QueryExecuted $query) {
-                $sql = sql($query->sql, $query->bindings);
-                $text = sprintf('%s %sms:%s', $query->connectionName, $query->time, $sql);
-                Log::channel(config('faravel.listen_sql.log'))->info($text);
-            });
+        if(!config('faravel.listen_sql.enable')) {
+            return;
         }
+
+        DB::connection('v2')->listen(function (QueryExecuted $query) {
+            $sql = sql($query->sql, $query->bindings);
+            $text = sprintf('sql:%s %sms -> %s', $query->connectionName, $query->time, $sql);
+            Log::channel(config('faravel.listen_sql.log'))->info($text);
+        });
     }
 
     /**
      * 监听 redis
      */
-    protected function bootListenRedis()
+    protected function listenRedis()
     {
-        foreach(config('faravel.listen_redis') as $connection => $log)
-        {
-            app('redis')->connection($connection)->enableEvents();
-            app('redis')->connection($connection)->listen(function(CommandExecuted $cmd) use($log) {
-                $text = sprintf("%s %dms:%s %s", $cmd->connectionName, $cmd->time, $cmd->command, implode(' ', $cmd->parameters));
-                Log::channel($log)->info($text);
-            });
+        if(!config('faravel.listen_redis.enable')) {
+            return;
         }
+
+        Redis::enableEvents();
+
+        Redis::listen(function(CommandExecuted $cmd) {
+            $text = sprintf("redis:%s %dms -> %s %s", $cmd->connectionName, $cmd->time, $cmd->command, implode(' ', $cmd->parameters));
+            Log::channel(config('faravel.listen_redis.log'))->info($text);
+        });
     }
 
     /**
      * 扩展 predis
      */
-    protected function bootRedisExtend()
+    protected function redisExtend()
     {
-        app('redis')->extend('predis', function() {
+        Redis::extend('predis', function() {
             return new \Faravel\Redis\Connectors\PredisConnector();
         });
     }

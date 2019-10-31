@@ -2,8 +2,8 @@
 
 namespace Faravel\Console\Commands;
 
-use Illuminate\Console\Command;
-use Barryvdh\Reflection\DocBlock;
+use Illuminate\Support\Arr;
+use ReflectionClass;
 use Composer\Autoload\ClassMapGenerator;
 use Illuminate\Support\Str;
 
@@ -14,167 +14,267 @@ class BuildModel extends Command
      *
      * @var string
      */
-    protected $signature = 'faravel:BuildModel';
+    protected $signature = 'faravel:BuildModel {--table-const-name= : 生成表名的常量名称（为空则不生成表常量）} 
+                                               {--gen-field-name : 是否生成字段名常量（tableName.fieldName）}
+                                               {--field-name-prefix= : 字段名常量前缀}
+                                               {--gen-field-shortname : 是否生成字段短名常量}
+                                               {--field-shortname-prefix= : 字段短名常量前缀}
+                                               {--gen-field-enum : 是否生成字段枚举常量}
+                                               {--field-enum-prefix= : 枚举常量前缀}
+                                               {--const-name-style= : 常量命名风格 camel:首字母小写驼峰 Camel:首字母大写驼峰 snake:小写下划线 SNAKE:大写下划线}
+                                               {--reset : 重置（还原）}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = '';
+    protected $description = '对 Model 进行代码生成';
+
+    /**
+     * @var array 存放枚举字段说明
+     */
+    protected $enumTable = [];
 
     /**
      * Execute the console command.
      * @throws \ReflectionException
      */
-    public function handle()
+    protected function _handle()
     {
-        $language = [];
-
         foreach(ClassMapGenerator::createMap(app_path()) as $className => $classFile)
         {
-            $classReflection  = new \ReflectionClass($className);
-            if(!$classReflection->isSubclassOf('App\Model')) continue;
+            $constants = $methods = [];
+
+            // 重置
+
+            if($this->option('reset')) {
+                goto generate;
+            }
+
+            $classReflection  = new ReflectionClass($className);
+            if(!$classReflection->isSubclassOf('Illuminate\Database\Eloquent\Model')) continue;
             if($classReflection->isAbstract()) continue;
 
             /**
-             * @var Model $model;
+             * @var \Illuminate\Database\Eloquent\Model $model;
              */
             $model = $classReflection->newInstance();
 
             $classShortName = $classReflection->getShortName();
-            $connectionName = $classReflection->getConstant('CONNECTION');
+            $connectionName = $model->getConnectionName();
             $databaseName = $model->getConnection()->getDatabaseName();
             $tableName = $model->getTable();
-            $sql = "SELECT COLUMN_NAME, COLUMN_TYPE, COLUMN_DEFAULT, COLUMN_COMMENT FROM `information_schema`.`COLUMNS` WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND DATA_TYPE = 'enum'";
 
-            $methods = [];
-            $constants = [];
-            $comments = [];
-
-            $enumFields = $model->getConnection()->select($sql, [$databaseName, $tableName]);
-            foreach($enumFields as $field)
-            {
-                $fieldName = $field->COLUMN_NAME;
-
-                $fieldComment = '';
-                if(preg_match('/^([^\s]+)/', $field->COLUMN_COMMENT, $result))
-                {
-                    $fieldComment = $result[1];
-                }
-
-                if(preg_match('/^enum\((.*?)\)$/', $field->COLUMN_TYPE, $result))
-                {
-                    $enumValues = explode("','", trim($result[1], "'"));
-                }
-
-                $enumComments = [];
-                foreach($enumValues ?? [] as $enumValue)
-                {
-                    $enumComment = null;
-                    if(preg_match("%{$enumValue}:([^/]+)%", $field->COLUMN_COMMENT, $result))
-                    {
-                        $enumComment = $result[1];
-                    }
-
-                    $enumComments[$enumValue] = $enumComment ?? $enumValue;
-                }
-
-                $language[$connectionName] = $language[$connectionName] ?? [];
-                $language[$connectionName][$tableName] = $language[$connectionName][$tableName] ?? [];
-                $language[$connectionName][$tableName][$fieldName] = $enumComments;
-
-                foreach($enumComments ?? [] as $enumValue => $enumComment)
-                {
-                    $constant = strtoupper($fieldName) .'_'. strtoupper($enumValue);
-
-                    $constants[] =<<<CODE
+            if($tableConstName = $this->option('table-const-name', null)) {
+                $constants[] =<<<CODE
     /**
-     * {$fieldComment} {$enumComment}
+     * Table name.
      */
-     const $constant = '{$enumValue}';
+     const {$tableConstName} = '{$tableName}';
+CODE;
+            }
+
+            $sql = "SELECT COLUMN_NAME, COLUMN_TYPE, COLUMN_DEFAULT, COLUMN_COMMENT, DATA_TYPE FROM `information_schema`.`COLUMNS` WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ?";
+            $fields = $model->getConnection()->select($sql, [$databaseName, $tableName]);
+            foreach($fields as $field)
+            {
+                if($this->option('gen-field-enum')) {
+                    foreach($this->handleEnum($model, $field) as $enum) {
+                        $constants[] =<<<CODE
+    /**
+     * {$enum['comment']}
+     */
+     const {$enum['name']} = '{$enum['value']}';
 CODE;
 
-                    $methodName = Str::camel(implode('_', ['scope', 'where', $fieldName, $enumValue]));
-                    $methods[] =<<<CODE
+                        $methodName = Str::camel(implode('_', ['scope', 'where', $enum['column'], $enum['value']]));
+                        $methods[] =<<<CODE
     /**
-     * As "where {$fieldName} = {$enumValue}"
+     * As "where {$enum['column']} = {$enum['value']}"
      * @param \Illuminate\Database\Eloquent\Builder \$query
      * @return {$classShortName}|\Illuminate\Database\Eloquent\Builder
      */
-    public function {$methodName}(\Illuminate\Database\Eloquent\Builder \$query) {
-        return \$query->where('{$fieldName}', static::{$constant});
+    public function {$methodName}(\Illuminate\Database\Eloquent\Builder \$query)
+    {
+        return \$query->where('{$enum['column']}', static::{$enum['name']});
     }
 CODE;
 
-                    $methodName = Str::camel(implode('_', ['is', $fieldName, $enumValue]));
-                    $methods[] =<<<CODE
+                        $methodName = Str::camel(implode('_', ['is', $enum['column'], $enum['value']]));
+                        $methods[] =<<<CODE
     /**
-     * {$fieldName} is {$enumValue}?
-     * @return bool
+     * {$enum['column']} is {$enum['value']}?
      */
-    public function {$methodName}() {
-        return \$this->{$fieldName} === static::{$constant};
+    public function {$methodName}()
+    {
+        return \$this->{$enum['column']} === static::{$enum['name']};
     }
+CODE;
+                    }
+                }
+
+                if($this->option('gen-field-name', false)) {
+                    $prefix = $this->option('field-name-prefix', '');
+                    $constName = $this->name($field->COLUMN_NAME);
+                    $constants[] =<<<CODE
+    /**
+     * Field name by {$field->COLUMN_NAME}
+     * {$field->COLUMN_COMMENT}
+     */
+     const {$prefix}{$constName} = '{$tableName}.{$field->COLUMN_NAME}';
+CODE;
+                }
+
+                if($this->option('gen-field-shortname', false)) {
+                    $prefix = $this->option('field-shortname-prefix', '');
+                    $constName = $this->name($field->COLUMN_NAME);
+                    $constants[] =<<<CODE
+    /**
+     * Field shortname by {$field->COLUMN_NAME}
+     * {$field->COLUMN_COMMENT}
+     */
+     const {$prefix}{$constName} = '{$field->COLUMN_NAME}';
 CODE;
                 }
             }
 
+generate:
             $code = file_get_contents($classFile);
             if(!$code) continue;
 
-            constant_code:
-            $code = preg_replace('%#<BuildTableFieldEnum:const>.*?#</BuildTableFieldEnum:const>\n\n%s', '', $code);
-            if(!count($constants)) {
-                goto method_code;
-            }
 
-            $constantCode = trim(implode("\n\n", $constants));
-            $constantCode =<<<CODE
-#<BuildTableFieldEnum:const>
-    
+            $code = preg_replace('%#generated-const-code-block.*?#generated-const-code-block\n\n%s', '', $code);
+            if(count($constants)) {
+                $constantCode = trim(implode("\n\n", $constants));
+                $constantCode =<<<CODE
+#generated-const-code-block
+
     {$constantCode}
-    
-#</BuildTableFieldEnum:const>
+
+#generated-const-code-block
 CODE;
-
-            $code = preg_replace('%[^\S\n]*\bconst\s+TABLE\s*=.*%', "{$constantCode}\n\n\\0", $code);
-
-            method_code:
-            $code = preg_replace('%\n#<BuildTableFieldEnum:method>.*?#</BuildTableFieldEnum:method>\n%s', '', $code);
-            if(!count($methods)) {
-                goto comment;
+                $code = preg_replace('%\bclass\s+'.$classShortName.'\b.*?\{\n*%s', "\\0{$constantCode}\n\n", $code);
             }
 
-            $methodCode = trim(implode("\n\n", $methods));
-            $methodCode =<<<CODE
-#<BuildTableFieldEnum:method>
-    
+            $code = preg_replace('%\n\n#generated-method-code-block.*?#generated-method-code-block%s', '', $code);
+            if(count($methods)) {
+                $methodCode = trim(implode("\n\n", $methods));
+                $methodCode =<<<CODE
+#generated-method-code-block
+
     {$methodCode}
-    
-#</BuildTableFieldEnum:method>
+
+#generated-method-code-block
 CODE;
 
-            $code = preg_replace('/\}\s*$/', "\n{$methodCode}\n\\0", $code);
-
-            comment:
-            $docBlock = new DocBlock($classReflection, new DocBlock\Context($classReflection->getNamespaceName()));
-
-            foreach($comments as $comment) {
-                $tag = DocBlock\Tag::createInstance("{$comment}");
-                $docBlock->appendTag($tag);
+                $code = preg_replace('/\n*\}\s*$/', "\n\n{$methodCode}\\0", $code);
             }
 
-            $serializer = new DocBlock\Serializer();
-            $commentCode = $serializer->getDocComment($docBlock);
-
-            $code = str_replace($classReflection->getDocComment(), $commentCode, $code);
-
-            end:
             file_put_contents($classFile, $code);
-            continue;
         }
 
-        file_put_contents(resource_path('lang/zh-CN/table.php'), "<?php\nreturn ". var_export($language, true) .';');
+        foreach($this->enumTable as $locale => $data) {
+            file_put_contents(resource_path("lang/{$locale}/table.php"), "<?php\nreturn " . var_export($data, true) . ';');
+        }
+    }
+
+    /**
+     * @param \Illuminate\Database\Eloquent\Model $model
+     * @param $field
+     */
+    protected function handleEnum($model, $field)
+    {
+        $data = [];
+
+        $method = Str::camel(implode('_', ['get', $field->COLUMN_NAME, 'Enumerates']));
+        if(method_exists($model, $method)) {
+            $enums = call_user_func([$model, $method], $field);
+        } elseif($field->DATA_TYPE === 'enum') {
+            $enums = call_user_func([$model, 'getEnumerates'], $field);
+        } else {
+            return [];
+        }
+
+        foreach($enums as $value => $comments) {
+            $data[] = [
+                'name' => $this->option('field-enum-prefix') . $this->name($field->COLUMN_NAME, $value),
+                'value' => $value,
+                'field' => $field,
+                'column' => $field->COLUMN_NAME,
+                'comment' => $field->COLUMN_COMMENT
+            ];
+
+            if(is_array($comments)) {
+                foreach($comments as $locale => $comment) {
+                    $this->appendEnumTable(
+                        $locale,
+                        $model->getConnectionName(),
+                        $model->getTable(),
+                        $field->COLUMN_NAME,
+                        $value,
+                        $comment
+                    );
+                }
+            } else {
+                $this->appendEnumTable(
+                    config('app.locale'),
+                    $model->getConnectionName(),
+                    $model->getTable(),
+                    $field->COLUMN_NAME,
+                    $value,
+                    $comments
+                );
+            }
+        }
+
+        return $data;
+    }
+
+    /**
+     * 往枚举表添加枚举说明
+     * @param $locale
+     * @param $connectionName
+     * @param $tableName
+     * @param $columnName
+     * @param $value
+     * @param $comment
+     */
+    protected function appendEnumTable($locale, $connectionName, $tableName, $columnName, $value, $comment)
+    {
+        if(!isset($this->enumTable[$locale])) {
+            $this->enumTable[$locale] = [];
+        }
+
+
+        if(!isset($this->enumTable[$locale][$connectionName])) {
+            $this->enumTable[$locale][$connectionName] = [];
+        }
+
+        if(!isset($this->enumTable[$locale][$connectionName][$tableName])) {
+            $this->enumTable[$locale][$connectionName][$tableName] = [];
+        }
+
+
+        if(!isset($this->enumTable[$locale][$connectionName][$tableName][$columnName])) {
+            $this->enumTable[$locale][$connectionName][$tableName][$columnName] = [];
+        }
+
+        $this->enumTable[$locale][$connectionName][$tableName][$columnName][$value] = $comment;
+    }
+
+    /**
+     * @param mixed ...$name
+     * @return string
+     */
+    protected function name(...$name) {
+        $name = implode('_', $name);
+        switch($this->option('const-name-style')) {
+            case 'camel': return Str::camel($name);
+            case 'Camel': return ucfirst(Str::camel($name));
+            case 'snake': return strtolower(Str::snake($name));
+            case 'SNAKE': return strtoupper(Str::snake($name));
+            default: return implode($name);
+        }
     }
 }

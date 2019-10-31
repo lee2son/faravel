@@ -2,6 +2,8 @@
 
 namespace Faravel\Redis\Connections;
 
+use Illuminate\Support\Traits\Macroable;
+
 /**
  * @mixin \Predis\Client
  */
