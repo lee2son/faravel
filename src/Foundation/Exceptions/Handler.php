@@ -2,19 +2,20 @@
 
 namespace Faravel\Foundation\Exceptions;
 
-
 use Exception;
 
 class Handler extends \Illuminate\Foundation\Exceptions\Handler
 {
-    public function report(\Exception $e)
-    {
-        // TODO 记录日志、增加 trace_id
-        return parent::report($e);
-    }
+    const REQUEST_ID = 'REQUEST_ID';
 
-    public function render($request, Exception $e)
+    protected function context()
     {
-        return parent::render($request, $e);
+        $context = parent::context();
+
+        if($requestId = request()->server(static::REQUEST_ID)) {
+            $context['requestId'] = $requestId;
+        }
+
+        return $context;
     }
 }

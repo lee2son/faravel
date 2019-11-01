@@ -2,7 +2,10 @@
 
 namespace Faravel;
 
+use Faravel\Redis\Connections\PredisConnection;
 use Illuminate\Database\Events\QueryExecuted;
+use Illuminate\Foundation\Http\Kernel;
+use Illuminate\Http\Request;
 use Illuminate\Redis\Events\CommandExecuted;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -32,8 +35,24 @@ class FaravelServiceProvider extends ServiceProvider
         $this->registerCommand();
 
         $this->publishes([
-            __DIR__ . '/../config/faravel.php' => base_path('config/faravel.php')
+            __DIR__ . '/../config/faravel.php' => config_path('faravel.php')
         ], 'faravel');
+
+        $this->requestMacro();
+    }
+
+    /**
+     * Illuminate\Http\Request 扩充方法
+     */
+    protected function requestMacro()
+    {
+        Request::macro('requestId', function() {
+            return $this->requestId;
+        });
+
+        Request::macro('requestTime', function() {
+            return $this->requestTime;
+        });
     }
 
     /**

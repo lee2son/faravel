@@ -7,14 +7,14 @@ use Illuminate\Database\Eloquent\Model as Eloquent;
 class Model extends Eloquent
 {
     const CONNECTION = null;
-    const TABLE = null;
-    const PRIMARY_KEY = null;
 
     public function __construct(array $attributes = [])
     {
-        $this->connection = static::CONNECTION;
-        $this->table = static::TABLE;
-        $this->primaryKey = static::PRIMARY_KEY;
+        if(static::CONNECTION) {
+            $this->connection = static::CONNECTION;
+        }
+
+        $this->perPage = env('PAGE_SIZE', $this->perPage);
 
         parent::__construct($attributes);
     }

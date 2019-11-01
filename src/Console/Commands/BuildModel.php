@@ -2,6 +2,7 @@
 
 namespace Faravel\Console\Commands;
 
+use Faravel\Console\Command;
 use Illuminate\Support\Arr;
 use ReflectionClass;
 use Composer\Autoload\ClassMapGenerator;
@@ -75,7 +76,7 @@ class BuildModel extends Command
 CODE;
             }
 
-            $sql = "SELECT COLUMN_NAME, COLUMN_TYPE, COLUMN_DEFAULT, COLUMN_COMMENT, DATA_TYPE FROM `information_schema`.`COLUMNS` WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ?";
+            $sql = "SELECT * FROM `information_schema`.`COLUMNS` WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ?";
             $fields = $model->getConnection()->select($sql, [$databaseName, $tableName]);
             foreach($fields as $field)
             {
@@ -105,6 +106,7 @@ CODE;
                         $methods[] =<<<CODE
     /**
      * {$enum['column']} is {$enum['value']}?
+     * @return bool
      */
     public function {$methodName}()
     {
@@ -245,7 +247,6 @@ CODE;
         if(!isset($this->enumTable[$locale])) {
             $this->enumTable[$locale] = [];
         }
-
 
         if(!isset($this->enumTable[$locale][$connectionName])) {
             $this->enumTable[$locale][$connectionName] = [];

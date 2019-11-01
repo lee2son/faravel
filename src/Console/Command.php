@@ -4,10 +4,17 @@ namespace Faravel\Console;
 
 abstract class Command extends \Illuminate\Console\Command
 {
-
     public function handle()
     {
-        $this->_handle();
+        try {
+            $this->_handle();
+        } catch (\Exception $e) {
+            $this->onError($e);
+        }
+    }
+
+    protected function onError(\Throwable $e) {
+        throw $e;
     }
 
     /**

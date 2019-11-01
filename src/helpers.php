@@ -28,3 +28,14 @@ function sql($sql, $bindings) : string
 
     return vsprintf($query, $bindings);
 }
+
+/**
+ * @param string $type
+ * @param string $prefix
+ * @return string
+ * @throws Exception
+ */
+function uuid(string $type = "", string $prefix = "")
+{
+    return $prefix . md5($type . uniqid() . random_bytes(32) . microtime());
+}
