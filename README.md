@@ -16,7 +16,7 @@ faravel 是一个对 laravel 功能进行扩展的库
 以下功能是选择性开启，默认是关闭状态
 
 ### 开启  `request_id` 支持
-`request_id`即是为每次 request 请求生成一个唯一ID，这个ID可以通过各种形式返回给客户端，这样在访问应用出现问题时可以凭此ID快速定位问题。网上有的代替方案是通过中间件来实现的，中间件的缺点就是如果代码还没走到该中间件就抛出异常了，是没有 request_id 的。
+`request_id`即是为每次 request 请求生成一个唯一ID，这个ID可以通过各种形式返回给客户端，这样在访问应用出现问题时可以凭此ID快速定位问题。网上有的代替方案是通过中间件来实现的，中间件的缺点就是如果代码还没走到该中间件就抛出异常了，是没有 request_id 的；其次，nginx 的 access_log 也很方便的记录这个ID。
 
 + 首先需要配置 nginx：通过 nginx 生成的`$request_id`传递到应用（nginx 同时也应把该值存入 access_log）
 
@@ -38,15 +38,15 @@ faravel 是一个对 laravel 功能进行扩展的库
 详见 `config/faravel.php` 配置文件中的 `listen_redis`
 
 ### 编译 model
-对 Eloquent 进行编译，在 model 文件中加入一些代码以辅助开发
+对 Eloquent 进行编译，在 model 文件中加入一些代码以辅助开发。原理是读取所有继承自`Illuminate\Database\Eloquent\Model`的类，读取其绑定表的结构，并生成相关代码
 
-1. 将表名定义到常量
+1. 生成表名常量
 
         class User extends Illuminate\Database\Eloquent\Model
         {
             const TABLE = 'user';
         }
-2. 将字段名定义到常量（可设置前缀）
+2. 生成字段名常量（可设置前缀）
 
         class User extends Illuminate\Database\Eloquent\Model
         {
@@ -54,7 +54,7 @@ faravel 是一个对 laravel 功能进行扩展的库
             const F_USER_ID = 'id';
         }
         
-3. 将字段枚举定义到常量（可设置前缀），并生成相关方法和语言包
+3. 生成枚举常量（可设置前缀）并生成相关方法和语言包
 
         class User extends Illuminate\Database\Eloquent\Model
         {
@@ -69,8 +69,13 @@ faravel 是一个对 laravel 功能进行扩展的库
                 return $this->status === static::STATUS_NORMAL
             }
         }
+        
+        // 使用方法
+        
+        $user = User::whereWhereStatusNormal()->first();
+        dd($user->isStatusNormal());
 
-    同时把枚举说明生成一个语言包放在：`resources/lang/<locale>/table.php`。可通过在 model 中实现`getFieldNameEnumerates`方法或`Enumerates`来定制枚举（默认情况下只对字段类型为 enum 的字段进行处理）：
+    同时把枚举说明生成语言包放在：`resources/lang/<locale>/table.php`。可通过在 model 中实现`getFieldNameEnumerates`方法或`Enumerates`来定制枚举（默认情况下只处理 enum 类型的字段）：
     
         class User extends Illuminate\Database\Eloquent\Model
         {
@@ -105,3 +110,9 @@ faravel 是一个对 laravel 功能进行扩展的库
           --field-enum-prefix[=FIELD-ENUM-PREFIX]            枚举常量前缀
           --const-name-style[=CONST-NAME-STYLE]              常量命名风格 camel:首字母小写驼峰 Camel:首字母大写驼峰 snake:小写下划线 SNAKE:大写下划线
           --reset                                            重置（还原）
+          
+### 扩展 command
+使你的 command 继承自 `\Faravel\Console\Command` 即可
+
+### 扩展 model
+使你的 model 继承自 `\Faravel\Database\Eloquent\Model` 即可

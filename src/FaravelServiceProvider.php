@@ -37,22 +37,6 @@ class FaravelServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__ . '/../config/faravel.php' => config_path('faravel.php')
         ], 'faravel');
-
-        $this->requestMacro();
-    }
-
-    /**
-     * Illuminate\Http\Request 扩充方法
-     */
-    protected function requestMacro()
-    {
-        Request::macro('requestId', function() {
-            return $this->requestId;
-        });
-
-        Request::macro('requestTime', function() {
-            return $this->requestTime;
-        });
     }
 
     /**
@@ -74,7 +58,7 @@ class FaravelServiceProvider extends ServiceProvider
 
         DB::connection('v2')->listen(function (QueryExecuted $query) {
             $sql = sql($query->sql, $query->bindings);
-            $text = sprintf('sql:%s %sms -> %s', $query->connectionName, $query->time, $sql);
+            $text = sprintf('sql:%s %.03fms -> %s', $query->connectionName, $query->time, $sql);
             Log::channel(config('faravel.listen_sql.log'))->info($text);
         });
     }
@@ -91,7 +75,7 @@ class FaravelServiceProvider extends ServiceProvider
         Redis::enableEvents();
 
         Redis::listen(function(CommandExecuted $cmd) {
-            $text = sprintf("redis:%s %dms -> %s %s", $cmd->connectionName, $cmd->time, $cmd->command, implode(' ', $cmd->parameters));
+            $text = sprintf("redis:%s %.03fms -> %s %s", $cmd->connectionName, $cmd->time, $cmd->command, implode(' ', $cmd->parameters));
             Log::channel(config('faravel.listen_redis.log'))->info($text);
         });
     }
