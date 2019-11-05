@@ -14,7 +14,8 @@
     },
     "autoload": {
         "psr-4": {
-            "Faravel\\": "src/"
+            "Faravel\\": "src/",
+            "Illuminate\\": "laravel/framework/src/Illuminate"
         },
         "files": [
             "src/helpers.php"

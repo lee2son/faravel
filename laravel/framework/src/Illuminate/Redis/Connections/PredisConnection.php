@@ -1,6 +1,6 @@
 <?php
 
-namespace Faravel\Redis\Connections;
+namespace Illuminate\Redis\Connections;
 
 use Illuminate\Support\Traits\Macroable;
 
