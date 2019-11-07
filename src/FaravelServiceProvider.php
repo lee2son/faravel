@@ -6,6 +6,7 @@ use Faravel\Redis\Connections\PredisConnection;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Foundation\Http\Kernel;
+use Illuminate\Foundation\ProviderRepository;
 use Illuminate\Http\Request;
 use Illuminate\Redis\Events\CommandExecuted;
 use Illuminate\Support\Facades\Cache;
@@ -16,15 +17,17 @@ use Illuminate\Support\ServiceProvider;
 
 class FaravelServiceProvider extends ServiceProvider
 {
+    protected $commands = [
+        \Faravel\Console\Commands\BuildModel::class
+    ];
+
     /**
      * Bootstrap any application services.
      * @return void
      */
     public function boot()
     {
-        $this->redisExtend();
-        $this->listenSql();
-        $this->listenRedis();
+
     }
 
     /**
@@ -34,61 +37,29 @@ class FaravelServiceProvider extends ServiceProvider
     public function register()
     {
         $this->mergeConfigFrom(__DIR__ . '/../config/faravel.php', 'faravel');
-        $this->registerCommand();
+        $this->commands($this->commands);
 
         $this->publishes([
             __DIR__ . '/../config/faravel.php' => config_path('faravel.php')
         ], 'faravel');
-    }
 
-    /**
-     * 注册命令
-     */
-    protected function registerCommand()
-    {
-        $this->commands(\Faravel\Console\Commands\BuildModel::class);
-    }
-
-    /**
-     * 监听 sql
-     */
-    protected function listenSql()
-    {
-        if(!config('faravel.listen_sql.enable')) {
-            return;
+        if($defaultStringLength = config('faravel.default_string_length')) {
+            \Illuminate\Database\Schema\Builder::defaultStringLength($defaultStringLength);
         }
 
-        DB::connection('v2')->listen(function (QueryExecuted $query) {
-            $sql = sql($query->sql, $query->bindings);
-            $text = sprintf('sql:%s %.03fms -> %s', $query->connectionName, $query->time, $sql);
-            Log::channel(config('faravel.listen_sql.log'))->info($text);
-        });
+        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+
+        $this->registerProvider();
     }
 
-    /**
-     * 监听 redis
-     */
-    protected function listenRedis()
+    protected function registerProvider()
     {
-        if(!config('faravel.listen_redis.enable')) {
-            return;
+        if(config('faravel.redis_log.enable')) {
+            $this->app->register($this->app->resolveProvider(ListenRedisServiceProvider::class)->setChannel(config('faravel.redis_log.log')), true);
         }
 
-        Redis::enableEvents();
-
-        Redis::listen(function(CommandExecuted $cmd) {
-            $text = sprintf("redis:%s %.03fms -> %s %s", $cmd->connectionName, $cmd->time, $cmd->command, implode(' ', $cmd->parameters));
-            Log::channel(config('faravel.listen_redis.log'))->info($text);
-        });
-    }
-
-    /**
-     * 扩展 predis
-     */
-    protected function redisExtend()
-    {
-        Redis::extend('predis', function() {
-            return new \Faravel\Redis\Connectors\PredisConnector();
-        });
+        if(config('faravel.sql_log.enable')) {
+            $this->app->register($this->app->resolveProvider(ListenSqlServiceProvider::class)->setChannel(config('faravel.sql_log.log')), true);
+        }
     }
 }

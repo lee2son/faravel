@@ -6,8 +6,6 @@ use Exception;
 
 class Handler extends \Illuminate\Foundation\Exceptions\Handler
 {
-    const REQUEST_ID = 'REQUEST_ID';
-
     /**
      * 记录错误日志时也记录 requestId，需要 nginx 开启 $request_id 功能：
      * add_header X-Request-Id $request_id;
@@ -18,7 +16,7 @@ class Handler extends \Illuminate\Foundation\Exceptions\Handler
     {
         $context = parent::context();
 
-        if(static::REQUEST_ID && $requestId = request()->server(static::REQUEST_ID)) {
+        if($requestId = request()->server(config('faravel.request_id'))) {
             $context['requestId'] = $requestId;
         }
 

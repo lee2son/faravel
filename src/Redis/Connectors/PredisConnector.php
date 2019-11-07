@@ -4,10 +4,11 @@ namespace Faravel\Redis\Connectors;
 
 use Faravel\Redis\Connections\PredisClusterConnection;
 use Faravel\Redis\Connections\PredisConnection;
+use Illuminate\Contracts\Redis\Connector;
 use Illuminate\Support\Arr;
 use Predis\Client;
 
-class PredisConnector/* extends \Illuminate\Redis\Connectors\PredisConnector*/
+class PredisConnector/* extends \Illuminate\Redis\Connectors\PredisConnector*/ implements Connector
 {
     /**
      * Create a new clustered Predis connection.

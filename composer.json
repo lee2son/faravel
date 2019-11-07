@@ -14,8 +14,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Faravel\\": "src/",
-            "Illuminate\\": "laravel/framework/src/Illuminate"
+            "Faravel\\": "src/"
         },
         "files": [
             "src/helpers.php"
@@ -28,7 +27,9 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Faravel\\FaravelServiceProvider"
+                "Faravel\\FaravelServiceProvider",
+                "Faravel\\RedisExtendServiceProvider",
+                "Faravel\\RequestIdServiceProvider"
             ],
             "aliases": {
 

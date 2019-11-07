@@ -19,7 +19,7 @@ class Model extends Eloquent
             $this->connection = static::CONNECTION;
         }
 
-        $this->perPage = env('PAGE_SIZE', $this->perPage);
+        $this->perPage = config('faravel.page_size', $this->perPage);
 
         parent::__construct($attributes);
     }

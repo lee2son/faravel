@@ -6,6 +6,11 @@ use Illuminate\Support\Facades\Cache;
 
 class Builder extends \Illuminate\Database\Eloquent\Builder
 {
+    /**
+     * 从缓存获取数据
+     * @param int $expiry 缓存过期时间
+     * @return mixed
+     */
     public function firstFromCache($expiry = 3600)
     {
         $connection = $this->getModel()->getConnectionName();

@@ -76,10 +76,12 @@ class BuildModel extends Command
 CODE;
             }
 
-            $sql = "SELECT * FROM `information_schema`.`COLUMNS` WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ?";
+            $sql = "SELECT * FROM `information_schema`.`COLUMNS` WHERE `TABLE_SCHEMA` = ? AND `TABLE_NAME` = ?";
             $fields = $model->getConnection()->select($sql, [$databaseName, $tableName]);
             foreach($fields as $field)
             {
+                $builder = get_class($model->newModelQuery());
+
                 if($this->option('gen-field-enum')) {
                     foreach($this->handleEnum($model, $field) as $enum) {
                         $constants[] =<<<CODE
@@ -93,12 +95,11 @@ CODE;
                         $methods[] =<<<CODE
     /**
      * As "where {$enum['column']} = {$enum['value']}"
-     * @param \Illuminate\Database\Eloquent\Builder \$query
-     * @return {$classShortName}|\Illuminate\Database\Eloquent\Builder
+     * @param \\{$builder} \$query
      */
-    public function {$methodName}(\Illuminate\Database\Eloquent\Builder \$query)
+    public function {$methodName}(\\{$builder} \$query)
     {
-        return \$query->where('{$enum['column']}', static::{$enum['name']});
+        \$query->where('{$enum['column']}', static::{$enum['name']});
     }
 CODE;
 
