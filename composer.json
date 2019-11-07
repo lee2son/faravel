@@ -29,7 +29,6 @@
             "providers": [
                 "Faravel\\FaravelServiceProvider",
                 "Faravel\\RedisExtendServiceProvider",
-                "Faravel\\RequestIdServiceProvider"
             ],
             "aliases": {
 
