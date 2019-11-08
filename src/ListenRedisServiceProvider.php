@@ -2,14 +2,7 @@
 
 namespace Faravel;
 
-use Faravel\Redis\Connections\PredisConnection;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Events\QueryExecuted;
-use Illuminate\Foundation\Http\Kernel;
-use Illuminate\Http\Request;
 use Illuminate\Redis\Events\CommandExecuted;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\ServiceProvider;

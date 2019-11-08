@@ -1,15 +1,20 @@
 <?php
 
-namespace Faravel\Redis\Connectors;
+namespace Faravel\Illuminate\Redis\Connectors;
 
-use Faravel\Redis\Connections\PredisClusterConnection;
-use Faravel\Redis\Connections\PredisConnection;
+use Faravel\Illuminate\Redis\Connections\PredisClusterConnection;
+use Faravel\Illuminate\Redis\Connections\PredisConnection;
 use Illuminate\Contracts\Redis\Connector;
 use Illuminate\Support\Arr;
 use Predis\Client;
 
 class PredisConnector/* extends \Illuminate\Redis\Connectors\PredisConnector*/ implements Connector
 {
+    /**
+     * @var string
+     */
+    public static $clientClass = Client::class;
+
     /**
      * Create a new clustered Predis connection.
      *
@@ -23,7 +28,7 @@ class PredisConnector/* extends \Illuminate\Redis\Connectors\PredisConnector*/ i
             ['timeout' => 10.0], $options, Arr::pull($config, 'options', [])
         );
 
-        return new PredisConnection(new Client($config, $formattedOptions));
+        return new PredisConnection($this->createClient($config, $formattedOptions));
     }
 
     /**
@@ -38,8 +43,21 @@ class PredisConnector/* extends \Illuminate\Redis\Connectors\PredisConnector*/ i
     {
         $clusterSpecificOptions = Arr::pull($config, 'options', []);
 
-        return new PredisClusterConnection(new Client(array_values($config), array_merge(
+        return new PredisClusterConnection($this->createClient(array_values($config), array_merge(
             $options, $clusterOptions, $clusterSpecificOptions
         )));
+    }
+
+    /**
+     * Create a predis-client
+     *
+     * @param null $parameters
+     * @param null $options
+     * @return Client
+     */
+    public function createClient($parameters = null, $options = null): Client
+    {
+        $client = static::$clientClass;
+        return new $client($parameters, $options);
     }
 }

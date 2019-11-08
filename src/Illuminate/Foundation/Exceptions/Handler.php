@@ -1,6 +1,6 @@
 <?php
 
-namespace Faravel\Foundation\Exceptions;
+namespace Faravel\Illuminate\Foundation\Exceptions;
 
 use Exception;
 

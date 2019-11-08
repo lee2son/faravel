@@ -1,8 +1,8 @@
 <?php
 
-namespace Faravel\Console\Commands;
+namespace Faravel\Illuminate\Console\Commands;
 
-use Faravel\Illuminate\Console\Command;
+use Faravel\Console\Command;
 use Illuminate\Support\Arr;
 use ReflectionClass;
 use Composer\Autoload\ClassMapGenerator;

@@ -1,8 +1,6 @@
 <?php
 
-namespace Faravel\Redis\Connections;
-
-use Illuminate\Support\Traits\Macroable;
+namespace Faravel\Illuminate\Redis\Connections;
 
 /**
  * @mixin \Predis\Client

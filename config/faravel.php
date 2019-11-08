@@ -1,5 +1,7 @@
 <?php
 return [
+    // $_SERVER['REQUEST_ID']
+    // nginx: fastcgi_param REQUEST_ID $request_id;
     'request_id' => 'REQUEST_ID',
 
     // 记录 sql 查询日志

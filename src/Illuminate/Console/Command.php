@@ -1,6 +1,6 @@
 <?php
 
-namespace Faravel\Console;
+namespace Faravel\Illuminate\Console;
 
 abstract class Command extends \Illuminate\Console\Command
 {

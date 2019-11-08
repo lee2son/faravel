@@ -2,22 +2,14 @@
 
 namespace Faravel;
 
-use Faravel\Redis\Connections\PredisConnection;
+use Faravel\Illuminate\Redis\Connectors\PredisConnector;
 use Illuminate\Contracts\Redis\Connector;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Events\QueryExecuted;
-use Illuminate\Foundation\Http\Kernel;
-use Illuminate\Http\Request;
-use Illuminate\Redis\Events\CommandExecuted;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\ServiceProvider;
 
 class RedisExtendServiceProvider extends ServiceProvider
 {
-    const CONNECTOR = \Faravel\Redis\Connectors\PredisConnector::class;
+    const PREDIS_CONNECTOR = PredisConnector::class;
 
     /**
      * Bootstrap any application services.
@@ -25,8 +17,9 @@ class RedisExtendServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        Redis::extend('predis', function() {
-            return $this->getConnector();
+        $provider = $this;
+        Redis::extend('predis', function() use($provider) {
+            return $provider->createPredisConnector();
         });
     }
 
@@ -36,16 +29,15 @@ class RedisExtendServiceProvider extends ServiceProvider
      */
     public function register()
     {
-
     }
 
     /**
-     * 获取一个 predis-connector
+     * Create a predis-connector
      * @return Connector
      */
-    protected function getConnector(): Connector
+    public function createPredisConnector(): Connector
     {
-        $connector = static::CONNECTOR;
+        $connector = static::PREDIS_CONNECTOR;
         return new $connector();
     }
 }

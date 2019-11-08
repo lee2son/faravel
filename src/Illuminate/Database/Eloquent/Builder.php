@@ -1,6 +1,6 @@
 <?php
 
-namespace Faravel\Database\Eloquent;
+namespace Faravel\Illuminate\Database\Eloquent;
 
 use Illuminate\Support\Facades\Cache;
 

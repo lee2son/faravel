@@ -1,6 +1,6 @@
 <?php
 
-namespace Faravel\Routing;
+namespace Faravel\Illuminate\Routing;
 
 class Controller extends \Illuminate\Routing\Controller
 {

@@ -2,17 +2,6 @@
 
 namespace Faravel;
 
-use Faravel\Redis\Connections\PredisConnection;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Events\QueryExecuted;
-use Illuminate\Foundation\Http\Kernel;
-use Illuminate\Foundation\ProviderRepository;
-use Illuminate\Http\Request;
-use Illuminate\Redis\Events\CommandExecuted;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\ServiceProvider;
 
 class FaravelServiceProvider extends ServiceProvider
@@ -27,7 +16,7 @@ class FaravelServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-
+        $this->registerProvider();
     }
 
     /**
@@ -48,8 +37,6 @@ class FaravelServiceProvider extends ServiceProvider
         }
 
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
-
-        $this->registerProvider();
     }
 
     protected function registerProvider()
