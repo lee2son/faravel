@@ -16,8 +16,12 @@ class Handler extends \Illuminate\Foundation\Exceptions\Handler
     {
         $context = parent::context();
 
-        if($requestId = request()->server(config('faravel.request_id'))) {
+        if($requestId = request()->header('X-Request-Id')) {
             $context['requestId'] = $requestId;
+        }
+
+        if($traceId = request()->header('X-Trace-Id')) {
+            $context['traceId'] = $traceId;
         }
 
         return $context;

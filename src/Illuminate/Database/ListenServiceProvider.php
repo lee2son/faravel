@@ -1,13 +1,13 @@
 <?php
 
-namespace Faravel;
+namespace Faravel\Illuminate\Database;
 
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
 
-class ListenSqlServiceProvider extends ServiceProvider
+class ListenServiceProvider extends ServiceProvider
 {
     /**
      * @var string log channel

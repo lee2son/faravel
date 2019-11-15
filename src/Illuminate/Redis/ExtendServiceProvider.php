@@ -1,13 +1,13 @@
 <?php
 
-namespace Faravel;
+namespace Faravel\Illuminate\Redis;
 
 use Faravel\Illuminate\Redis\Connectors\PredisConnector;
 use Illuminate\Contracts\Redis\Connector;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\ServiceProvider;
 
-class RedisExtendServiceProvider extends ServiceProvider
+class ExtendServiceProvider extends ServiceProvider
 {
     const PREDIS_CONNECTOR = PredisConnector::class;
 

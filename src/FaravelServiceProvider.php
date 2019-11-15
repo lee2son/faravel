@@ -2,12 +2,15 @@
 
 namespace Faravel;
 
+use Illuminate\Queue\Queue;
 use Illuminate\Support\ServiceProvider;
+use Faravel\Illuminate\Redis\ListenServiceProvider as ListenRedisServiceProvider;
+use Faravel\Illuminate\Database\ListenServiceProvider as ListenSqlServiceProvider;;
 
 class FaravelServiceProvider extends ServiceProvider
 {
     protected $commands = [
-        \Faravel\Console\Commands\BuildModel::class
+        \Faravel\Console\BuildModel::class,
     ];
 
     /**

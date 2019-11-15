@@ -1,13 +1,13 @@
 <?php
 
-namespace Faravel;
+namespace Faravel\Illuminate\Redis;
 
 use Illuminate\Redis\Events\CommandExecuted;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\ServiceProvider;
 
-class ListenRedisServiceProvider extends ServiceProvider
+class ListenServiceProvider extends ServiceProvider
 {
     /**
      * @var string log channel

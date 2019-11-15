@@ -1,6 +1,6 @@
 <?php
 
-namespace Faravel\Console\Commands;
+namespace Faravel\Console;
 
 use Faravel\Illuminate\Console\Command;
 use Illuminate\Support\Arr;
@@ -15,15 +15,15 @@ class BuildModel extends Command
      *
      * @var string
      */
-    protected $signature = 'faravel:BuildModel {--table-const-name= : 生成表名的常量名称（为空则不生成表常量）} 
-                                               {--gen-field-name : 是否生成字段名常量（tableName.fieldName）}
-                                               {--field-name-prefix= : 字段名常量前缀}
-                                               {--gen-field-shortname : 是否生成字段短名常量}
-                                               {--field-shortname-prefix= : 字段短名常量前缀}
-                                               {--gen-field-enum : 是否生成字段枚举常量}
-                                               {--field-enum-prefix= : 枚举常量前缀}
-                                               {--const-name-style= : 常量命名风格 camel:首字母小写驼峰 Camel:首字母大写驼峰 snake:小写下划线 SNAKE:大写下划线}
-                                               {--reset : 重置（还原）}';
+    protected $signature = 'faravel:build-model {--table-const-name= : 生成表名的常量名称（为空则不生成表常量）} 
+                                                {--gen-field-name : 是否生成字段名常量（tableName.fieldName）}
+                                                {--field-name-prefix= : 字段名常量前缀}
+                                                {--gen-field-shortname : 是否生成字段短名常量}
+                                                {--field-shortname-prefix= : 字段短名常量前缀}
+                                                {--gen-field-enum : 是否生成字段枚举常量}
+                                                {--field-enum-prefix= : 枚举常量前缀}
+                                                {--const-name-style= : 常量命名风格 camel:首字母小写驼峰 Camel:首字母大写驼峰 snake:小写下划线 SNAKE:大写下划线}
+                                                {--reset : 重置（还原）}';
 
     /**
      * The console command description.

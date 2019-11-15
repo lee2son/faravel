@@ -2,7 +2,7 @@
 
 namespace Faravel\Illuminate\Routing;
 
-class Controller extends \Illuminate\Routing\Controller
+abstract class Controller extends \Illuminate\Routing\Controller
 {
     /**
      * 在调用 action 方法之前调用
@@ -37,14 +37,24 @@ class Controller extends \Illuminate\Routing\Controller
      * @param string $method
      * @param array $parameters
      * @return \Symfony\Component\HttpFoundation\Response
-     * @throws
      */
     final public function callAction($method, $parameters)
     {
         $this->before();
-        $result = call_user_func_array([$this, $method], $parameters);
+        $result = $this->_callAction($method, $parameters);
         $response = $this->response($result);
         $this->after($response);
         return $response;
+    }
+
+    /**
+     * Execute an action on the controller.
+     * @param string $method
+     * @param array $parameters
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    protected function _callAction($method, $parameters)
+    {
+        return call_user_func_array([$this, $method], $parameters);
     }
 }
