@@ -18,8 +18,8 @@ class DatabaseHandler extends AbstractProcessingHandler
 
     public function __construct($level = Logger::DEBUG, $bubble = true)
     {
-        $this->connection = config('faravel.log_to_db.connection');
-        $this->table = config('faravel.log_to_db.table');
+        $this->connection = env('LOG_CONNECTION');
+        $this->table = env('LOG_TABLE');
         parent::__construct($level, $bubble);
     }
 

@@ -16,7 +16,7 @@ class PredisConnection extends \Illuminate\Redis\Connections\PredisConnection
      * @throws \Throwable
      * @return mixed
      */
-    public function spinLock($key, callable $handle, $expire = 120, $usleep = 10e3) {
+    public function spinLock($key, callable $handle, $expire = 120, $usleep = 20e3) {
         $key = "lock:{$key}";
 
         while(!$this->set($key, 1, 'EX', $expire, 'NX')) {

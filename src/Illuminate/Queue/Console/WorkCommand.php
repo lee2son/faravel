@@ -24,7 +24,7 @@ class WorkCommand extends \Illuminate\Queue\Console\WorkCommand
             $job->getJobId(),
             str_pad("{$status}:", 11),
             $job->resolveName(),
-            Carbon::createFromTimestamp($job->payload()['time'])->format('Y-m-d H:i:s'),
+            Carbon::createFromTimestamp($job->payload()['time'] ?? time())->format('Y-m-d H:i:s'),
             $job->attempts()
         ));
     }

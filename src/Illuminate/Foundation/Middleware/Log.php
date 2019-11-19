@@ -45,23 +45,23 @@ class Log
         }
 
         if($enable & static::REQUEST) {
-            $data['query'] = $request->request->all();
+            $data['request'] = $request->request->all();
         }
 
         if($enable & static::HEADERS) {
-            $data['query'] = $request->headers->all();
+            $data['headers'] = $request->headers->all();
         }
 
         if($enable & static::COOKIES) {
-            $data['query'] = $request->cookies->all();
+            $data['cookies'] = $request->cookies->all();
         }
 
         if($enable & static::SERVER) {
-            $data['query'] = $request->server->all();
+            $data['server'] = $request->server->all();
         }
 
         if($enable & static::FILES) {
-            $data['query'] = $request->files->all();
+            $data['files'] = $request->files->all();
         }
 
         if($enable & static::CONTENT) {

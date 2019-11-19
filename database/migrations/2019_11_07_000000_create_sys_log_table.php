@@ -13,7 +13,7 @@ class CreateSysLogTable extends Migration
      */
     public function up()
     {
-        Schema::create(config('faravel.log_to_db.table'), function (Blueprint $table) {
+        Schema::create(env('LOG_TABLE'), function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('env')->index()->comment('当前运行环境');
             $table->boolean('is_running_unit_tests')->index()->comment('是否运行在测试用例中');
@@ -39,7 +39,7 @@ class CreateSysLogTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists(config('faravel.log_to_db.table'));
+        Schema::dropIfExists(env('LOG_TABLE'));
     }
 
     /**
@@ -49,6 +49,6 @@ class CreateSysLogTable extends Migration
      */
     public function getConnection()
     {
-        return config('faravel.log_to_db.connection');
+        return env('LOG_CONNECTION');
     }
 }

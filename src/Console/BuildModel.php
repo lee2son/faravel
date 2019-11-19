@@ -3,7 +3,7 @@
 namespace Faravel\Console;
 
 use Composer\Autoload\ClassMapGenerator;
-use Faravel\Illuminate\Console\Command;
+use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 use ReflectionClass;
 
@@ -40,7 +40,7 @@ class BuildModel extends Command
      * Execute the console command.
      * @throws \ReflectionException
      */
-    protected function _handle()
+    public function handle()
     {
         foreach(ClassMapGenerator::createMap(app_path()) as $className => $classFile)
         {
