@@ -12,7 +12,7 @@ class ListenServiceProvider extends ServiceProvider
     /**
      * @var string log channel
      */
-    public $channel = "";
+    public $log = "";
 
     /**
      * Bootstrap any application services.
@@ -40,7 +40,7 @@ class ListenServiceProvider extends ServiceProvider
      */
     protected function listen(QueryExecuted $query)
     {
-        Log::channel($this->channel)->info($this->format($query));
+        Log::channel($this->log)->info($this->format($query));
     }
 
     /**
@@ -56,11 +56,11 @@ class ListenServiceProvider extends ServiceProvider
 
     /**
      * 设置记录日志的channel
-     * @param $channel
+     * @param $log
      */
-    public function setChannel($channel)
+    public function setLog($log)
     {
-        $this->channel = $channel;
+        $this->log = $log;
         return $this;
     }
 }

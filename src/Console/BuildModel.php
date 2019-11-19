@@ -2,11 +2,10 @@
 
 namespace Faravel\Console;
 
-use Faravel\Illuminate\Console\Command;
-use Illuminate\Support\Arr;
-use ReflectionClass;
 use Composer\Autoload\ClassMapGenerator;
+use Faravel\Illuminate\Console\Command;
 use Illuminate\Support\Str;
+use ReflectionClass;
 
 class BuildModel extends Command
 {

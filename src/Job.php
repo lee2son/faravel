@@ -29,17 +29,6 @@ abstract class Job
 //    public $retryAfter;
 
     /**
-     * @var null|string 默认连接，如果不设置则使用 SyncQueue
-     * @see \Illuminate\Queue\SyncQueue
-     */
-    public $_connection = null;
-
-    /**
-     * @var null|string 默认队列
-     */
-    public $_queue = null;
-
-    /**
      * constructor.
      */
     public function __construct()

@@ -3,8 +3,12 @@
 namespace Faravel\Logger\Monolog\Handler;
 
 use Monolog\Handler\AbstractProcessingHandler;
-use Monolog\Handler\HandlerInterface;
 use Monolog\Logger;
+
+//'name' => 'runtime',
+//'driver' => 'monolog',
+//'level' => 'debug',
+//'handler' => \Faravel\Logger\Monolog\Handler\DatabaseHandler::class,
 
 class DatabaseHandler extends AbstractProcessingHandler
 {
@@ -26,7 +30,8 @@ class DatabaseHandler extends AbstractProcessingHandler
             'is_running_unit_tests' => app()->runningUnitTests(),
             'is_running_in_console' => app()->runningInConsole(),
             'ips' => implode(',', request()->getClientIps()),
-            'request_id' => request()->server(config('faravel.request_id')),
+            'request_id' => request()->header('X-Request-Id'),
+            'trace_id' => request()->header('X-Trace-Id'),
             'message' => $record['message'],
             'context' => json_encode($record['context']),
             'level' => $record['level'],

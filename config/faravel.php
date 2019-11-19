@@ -1,12 +1,6 @@
 <?php
 return [
     /**
-     * $_SERVER['REQUEST_ID']
-     * nginx: fastcgi_param REQUEST_ID $request_id;
-     */
-    'request_id' => 'REQUEST_ID',
-
-    /**
      * 记录 sql 查询日志
      */
     'sql_log' => [
@@ -20,6 +14,32 @@ return [
     'redis_log' => [
         'enable' => true,
         'log' => env('LOG_CHANNEL', 'stack'),
+    ],
+
+    /**
+     * 记录 request 日志
+     * request 日志 message 前缀
+     */
+    'request_log' => [
+        'enable' => true,
+        'log' => env('LOG_CHANNEL', 'stack'),
+        'prefix' => 'request ',
+        'what' => [
+            'query', 'request', 'files', 'server', 'headers', 'cookies'
+        ]
+    ],
+
+    /**
+     * 记录 response 日志
+     * request 日志 message 前缀
+     */
+    'response_log' => [
+        'enable' => true,
+        'log' => env('LOG_CHANNEL', 'stack'),
+        'prefix' => 'request ',
+        'what' => [
+            'query', 'request', 'files', 'server', 'headers', 'cookies'
+        ]
     ],
 
     /**

@@ -2,10 +2,12 @@
 
 namespace Faravel;
 
-use Illuminate\Queue\Queue;
-use Illuminate\Support\ServiceProvider;
+use Faravel\Illuminate\Database\ListenServiceProvider as ListenSqlServiceProvider;
+use Faravel\Illuminate\Foundation\Http\ListenResponseHandledServiceProvider;
 use Faravel\Illuminate\Redis\ListenServiceProvider as ListenRedisServiceProvider;
-use Faravel\Illuminate\Database\ListenServiceProvider as ListenSqlServiceProvider;;
+use Faravel\Illuminate\Routing\ListenRequestServiceProvider;
+use Faravel\Illuminate\Routing\ListenRouteMatchedServiceProvider;
+use Illuminate\Support\ServiceProvider;
 
 class FaravelServiceProvider extends ServiceProvider
 {
@@ -19,7 +21,8 @@ class FaravelServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        $this->registerProvider();
+        $this->bootListenSql();
+        $this->bootListenRedis();
     }
 
     /**
@@ -42,14 +45,79 @@ class FaravelServiceProvider extends ServiceProvider
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
     }
 
-    protected function registerProvider()
+    protected function bootListenSql()
     {
-        if(config('faravel.redis_log.enable')) {
-            $this->app->register($this->app->resolveProvider(ListenRedisServiceProvider::class)->setChannel(config('faravel.redis_log.log')), true);
+        $config = config('faravel.sql_log');
+        if(!$config['enable']) {
+            return;
         }
 
-        if(config('faravel.sql_log.enable')) {
-            $this->app->register($this->app->resolveProvider(ListenSqlServiceProvider::class)->setChannel(config('faravel.sql_log.log')), true);
-        }
+        /**
+         * @var ListenSqlServiceProvider
+         */
+        $provider = $this->app->resolveProvider(ListenSqlServiceProvider::class);
+        $provider->setLog($config['log']);
+
+        $this->app->register($provider);
     }
+
+    protected function bootListenRedis()
+    {
+        $config = config('faravel.redis_log');
+        if(!$config['enable']) {
+            return;
+        }
+
+        /**
+         * @var ListenRedisServiceProvider
+         */
+        $provider = $this->app->resolveProvider(ListenRedisServiceProvider::class);
+        $provider->setLog($config['log']);
+
+        $this->app->register($provider);
+    }
+
+//    protected function bootListenRequest()
+//    {
+//        $config = config('faravel.request_log');
+//        if(!$config['enable']) {
+//            return;
+//        }
+//
+//        /**
+//         * @var ListenRequestServiceProvider
+//         */
+//        $provider = $this->app->resolveProvider(ListenRouteMatchedServiceProvider::class);
+//        $provider->setLog($config['log']);
+//        $provider->setWhat($config['what']);
+//        $provider->setPrefix($config['prefix']);
+//
+//        $this->app->register($provider);
+//    }
+//
+//    protected function bootListenResponse()
+//    {
+//        $config = config('faravel.response_log');
+//        if(!$config['enable']) {
+//            return;
+//        }
+//
+//        /**
+//         * @var ListenRequestServiceProvider
+//         */
+//        $provider = $this->app->resolveProvider(ListenResponseHandledServiceProvider::class);
+//        $provider->setLog($config['log']);
+////        $provider->setWhat($config['what']);
+////        $provider->setPrefix($config['prefix']);
+//
+//        $this->app->register($provider);
+//    }
+//
+//    protected function registerRouteMacro()
+//    {
+//        \Illuminate\Routing\Route::macro('log', function($log) {
+//            $this->action['log'] = $log;
+//            return $this;
+//        });
+//    }
 }

@@ -16,10 +16,11 @@ class CreateSysLogTable extends Migration
         Schema::create(config('faravel.log_to_db.table'), function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('env')->index()->comment('当前运行环境');
-            $table->boolean('is_running_unit_tests')->index()->comment('是否允许在测试用例中');
-            $table->boolean('is_running_in_console')->index()->comment('是否允许在控制台中');
+            $table->boolean('is_running_unit_tests')->index()->comment('是否运行在测试用例中');
+            $table->boolean('is_running_in_console')->index()->comment('是否运行在控制台中');
             $table->string('ips')->nullable()->index()->comment('客户端IP地址列表');
-            $table->string('request_id')->nullable()->index()->comment('$_SERVER["REQUEST_ID"]');
+            $table->string('request_id')->nullable()->index()->comment('X-Request-Id');
+            $table->string('trace_id')->nullable()->index()->comment('X-Trace-Id');
             $table->longText('message');
             $table->integer('level')->index();
             $table->string('level_name')->index();

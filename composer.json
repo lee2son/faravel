@@ -28,7 +28,9 @@
         "laravel": {
             "providers": [
                 "Faravel\\FaravelServiceProvider",
-                "Faravel\\Illuminate\\Redis\\ExtendServiceProvider"
+                "Faravel\\Illuminate\\Redis\\ExtendServiceProvider",
+                "Faravel\\Illuminate\\Queue\\CreatePayloadUsingServiceProvider",
+                "Faravel\\Illuminate\\Foundation\\Providers\\ArtisanServiceProvider"
             ],
             "aliases": {
 
