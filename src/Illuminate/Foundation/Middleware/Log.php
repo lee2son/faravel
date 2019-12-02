@@ -67,7 +67,7 @@ class Log
         if($enable & static::CONTENT) {
             $data['response']['content'] = $response->getContent();
         }
-        
+
         $message = sprintf("%s %s %s", $request->method(), $request->fullUrl(), $response->getStatusCode());
         \Illuminate\Support\Facades\Log::channel($log)->info($message, $data);
 
