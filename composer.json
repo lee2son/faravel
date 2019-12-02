@@ -1,0 +1,47 @@
+{
+    "name": "lee2son/faravel",
+    "description": "Super laravel.",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "lixx",
+            "email": "sss60@qq.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.1.0",
+        "predis/predis": "^1.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Faravel\\": "src/"
+        },
+        "files": [
+            "src/helpers.php"
+        ]
+    },
+    "require-dev": {
+        "laravel/framework": "5.8.*",
+        "barryvdh/laravel-ide-helper": "^2.6"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Faravel\\FaravelServiceProvider",
+                "Faravel\\Illuminate\\Redis\\ExtendServiceProvider",
+                "Faravel\\Illuminate\\Queue\\CreatePayloadUsingServiceProvider",
+                "Faravel\\Illuminate\\Foundation\\Providers\\ArtisanServiceProvider",
+                "Faravel\\Illuminate\\Bus\\BusServiceProvider"
+            ],
+            "aliases": {
+
+            }
+        }
+    },
+    "repositories": {
+        "packagist": {
+            "type": "composer",
+            "url": "https://packagist.phpcomposer.com"
+        }
+    }
+}
