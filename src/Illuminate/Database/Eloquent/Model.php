@@ -49,7 +49,7 @@ class Model extends Eloquent
      * @param $field
      * @return array
      */
-    public function getEnums($field)
+    public function getColumnEnums($field)
     {
         if($field->DATA_TYPE !== 'enum') {
             return [];
